@@ -1,0 +1,94 @@
+Dim Ticker As String
+Dim OpeningPrice As Double
+Dim ClosingPrice As Double
+Dim YearlyChange As Double
+Dim PercentageChange As Double
+Dim TotalVolume As Double
+Dim LastRow As Long
+Dim SummaryRow As Long
+Dim GreatestIncrease As Double
+Dim GreatestDecrease As Double
+Dim GreatestVolume As Double
+Dim TickerGI As String
+Dim TickerGD As String
+Dim TickerGV As String
+
+GreatestIncrease = 0
+GreatestDecrease = 0
+GreatestVolume = 0
+
+SummaryRow = 2
+
+LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+For i = 2 To LastRow
+
+    If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+    
+        Ticker = ws.Cells(i, 1).Value
+        
+        ClosingPrice = ws.Cells(i, 6).Value
+        
+        TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+        
+        YearlyChange = ClosingPrice - OpeningPrice
+        
+        If OpeningPrice <> 0 Then
+            PercentageChange = (YearlyChange / OpeningPrice) * 100
+        Else
+            PercentageChange = 0
+        End If
+        
+        ws.Cells(SummaryRow, 10).Value = Ticker
+        ws.Cells(SummaryRow, 11).Value = YearlyChange
+        ws.Cells(SummaryRow, 12).Value = PercentageChange
+        ws.Cells(SummaryRow, 13).Value = TotalVolume
+        
+        If YearlyChange > 0 Then
+            ws.Cells(SummaryRow, 11).Interior.Color = RGB(0, 255, 0)
+        ElseIf YearlyChange < 0 Then
+            ws.Cells(SummaryRow, 11).Interior.Color = RGB(255, 0, 0)
+        End If
+        
+        If PercentageChange > GreatestIncrease Then
+            GreatestIncrease = PercentageChange
+            TickerGI = Ticker
+        ElseIf PercentageChange < GreatestDecrease Then
+            GreatestDecrease = PercentageChange
+            TickerGD = Ticker
+        End If
+        
+        If TotalVolume > GreatestVolume Then
+            GreatestVolume = TotalVolume
+            TickerGV = Ticker
+        End If
+        
+        OpeningPrice = 0
+        ClosingPrice = 0
+        YearlyChange = 0
+        PercentageChange = 0
+        TotalVolume = 0
+        
+        SummaryRow = SummaryRow + 1
+        
+    Else
+        TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+        
+        If OpeningPrice = 0 Then
+            OpeningPrice = ws.Cells(i, 3).Value
+        End If
+    End If
+    
+Next i
+
+ws.Cells(2, 16).Value = "Greatest % Increase"
+ws.Cells(2, 17).Value = TickerGI
+ws.Cells(2, 18).Value = GreatestIncrease & "%"
+
+ws.Cells(3, 16).Value = "Greatest % Decrease"
+ws.Cells(3, 17).Value = TickerGD
+ws.Cells(3, 18).Value = GreatestDecrease & "%"
+
+ws.Cells(4, 16).Value = "Greatest Total Volume"
+ws.Cells(4, 17).Value = TickerGV
+ws.Cells(4, 18).Value = GreatestVolume
